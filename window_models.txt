@@ -1,0 +1,17 @@
+bppw为窗口内的均值
+X = R * QP 表示帧的复杂度
+Xratio = X / avgX
+
+
+bpp = rate / fr
+
+if Xratio < 0.9
+ 	bppx = bpp * 0.2
+else if Xratio < 1.0
+	bppx = bpp * Xratio * 0.6
+else if Xratio < 1.4
+	bppx = bpp * Xratio * 0.8
+else if Xratio >= 1.4
+	bppx = bpp * 1.4
+
+bppT = 0.3 * bppw + 0.7 * bppx 
