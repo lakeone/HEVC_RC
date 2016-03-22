@@ -1429,7 +1429,7 @@ Void TEncCu::xCheckRDCostInter( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, 
 #endif
 
   xCheckDQP( rpcTempCU );
-  //确定当前CU的最优预测模式，没尝试一种PU划分，将调用一次
+  //确定当前CU的最优预测模式，每尝试一种PU划分，将调用一次
   xCheckBestMode(rpcBestCU, rpcTempCU, uhDepth DEBUG_STRING_PASS_INTO(sDebug) DEBUG_STRING_PASS_INTO(sTest));
 }
 

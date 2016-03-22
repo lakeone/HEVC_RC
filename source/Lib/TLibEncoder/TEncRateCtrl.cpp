@@ -87,10 +87,12 @@ Void TEncRCSeq::create( Int totalFrames, Int targetBitrate, Int frameRate, Int G
   m_LCUHeight           = LCUHeight;
   m_numberOfLevel       = numberOfLevel;
   m_useLCUSeparateModel = useLCUSeparateModel;
+  m_framesLeft = m_totalFrames;
 
-  m_windowsBits = 0;
-  m_windowsL = frameRate;
-  m_leftFrames = 0;
+ 
+  m_windowsL = (frameRate < m_framesLeft ? frameRate : m_framesLeft );
+  m_windowsBits = (Double)m_targetRate * m_windowsL / (Double)m_frameRate;
+//  m_leftFrames = 0;
   m_complex = 0;
   m_num = 0;
   m_last_complex = 0;
@@ -163,7 +165,7 @@ Void TEncRCSeq::create( Int totalFrames, Int targetBitrate, Int frameRate, Int G
     }
   }
 
-  m_framesLeft = m_totalFrames;
+
   m_bitsLeft   = m_targetBits;
   m_adaptiveBit = adaptiveBit;
   m_lastLambda = 0.0;
@@ -605,8 +607,6 @@ Void TEncRCPic::create( TEncRCSeq* encRCSeq, TEncRCGOP* encRCGOP, Int frameLevel
 
   m_LCULeft         = m_numberOfLCU;
 
-  TEncRCSeq* rcSeq = getRCSequence();
-  m_bitsLeft = rcSeq->m_windowsBits / rcSeq->m_leftFrames - m_estHeaderBits;
   if (m_bitsLeft < 100)
 	  m_bitsLeft = 100;
   //m_bitsLeft       -= m_estHeaderBits;
@@ -658,30 +658,30 @@ Double TEncRCPic::estimatePicLambda( list<TEncRCPic*>& listPreviousPictures, Sli
   
   Double avg_bpp = m_encRCSeq->getSeqBpp();
   Double bppw;
-  Double bppx;
+//  Double bppx;
   Double bpp;
 
   if (eSliceType == I_SLICE)
 	  bpp = (Double)m_targetBits / (Double)m_numberOfPixel;
   else
   {
-	  bppw = (Double)m_encRCSeq->m_windowsBits / (Double)m_encRCSeq->m_leftFrames / (Double)m_numberOfPixel;
+	  bppw = (Double)m_encRCSeq->m_windowsBits / (Double)m_encRCSeq->m_windowsL / (Double)m_numberOfPixel;
+	  
 	  if (m_encRCSeq->m_num >= 10)
 	  {
 		  Double ratio = m_encRCSeq->m_last_complex * m_encRCSeq->m_num / m_encRCSeq->m_complex;
-		  if (ratio < 0.9)
-			  bppx = avg_bpp * 0.2;
+		  if (ratio < 0.7)
+			  bppw = bppw * 0.3;
 		  else if (ratio < 1.0)
-			  bppx = avg_bpp * ratio * 0.6;
+			  bppw = bppw * ratio * 0.6;
 		  else if (ratio < 1.4)
-			  bppx = avg_bpp * ratio * 0.8;
-		  else if (ratio >= 1.4)
-			  bppx = avg_bpp * 1.4;
-		  double a = 0.7;
-		  bpp = (1 - a) * bppw + a * bppx;
+			  bppw = bppw * ratio * 0.8;
+		  else if (ratio < 2)
+			  bppw = bppw * 2;
+		  else if (ratio >= 2)
+			  bppw = bppw * 3;
 	  }
-	  else
-		  bpp = bppw; 
+	  bpp = bppw;
   }
 	  
   

@@ -3,15 +3,22 @@ X = R * QP 表示帧的复杂度
 Xratio = X / avgX
 
 
-bpp = rate / fr
+	  rcSeq->m_windowsBits += rcSeq->m_bitsLeft / rcSeq->m_framesLeft;
 
-if Xratio < 0.9
- 	bppx = bpp * 0.2
-else if Xratio < 1.0
-	bppx = bpp * Xratio * 0.6
-else if Xratio < 1.4
-	bppx = bpp * Xratio * 0.8
-else if Xratio >= 1.4
-	bppx = bpp * 1.4
-
-bppT = 0.3 * bppw + 0.7 * bppx 
+	  bppw = (Double)m_encRCSeq->m_windowsBits / (Double)m_encRCSeq->m_leftFrames / (Double)m_numberOfPixel;
+	  
+	  if (m_encRCSeq->m_num >= 10)
+	  {
+		  Double ratio = m_encRCSeq->m_last_complex * m_encRCSeq->m_num / m_encRCSeq->m_complex;
+		  if (ratio < 0.8)
+			  bppw = bppw * 0.2;
+		  else if (ratio < 1.0)
+			  bppw = bppw * ratio * 0.6;
+		  else if (ratio < 1.4)
+			  bppw = bppw * ratio * 0.8;
+		  else if (ratio < 2)
+			  bppw = bppw * 2;
+		  else if (ratio >= 2)
+			  bppw = bppw * 3;
+	  }
+	  bpp = bppw;

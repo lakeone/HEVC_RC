@@ -1086,12 +1086,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
         frameLevel = 0;
       }
 	  TEncRCSeq* rcSeq = m_pcRateCtrl->getRCSeq();
-	  if (rcSeq->m_leftFrames == 0)
-	  {
-		  rcSeq->m_leftFrames = rcSeq->m_windowsL;
-		  //rcSeq->m_windowsBits = rcSeq->getTargetRate() / rcSeq->getFrameRate() * rcSeq->m_windowsL;
-		  rcSeq->m_windowsBits = rcSeq->getTargetRate();
-	  }
+	  //if (rcSeq->m_leftFrames == 0)
+	  //{
+		 // rcSeq->m_leftFrames = rcSeq->m_windowsL;
+		 // //rcSeq->m_windowsBits = rcSeq->getTargetRate() / rcSeq->getFrameRate() * rcSeq->m_windowsL;
+		 // rcSeq->m_windowsBits = rcSeq->getTargetRate();
+	  //}
 	  //创建并初始化TEncRCPic对象，初始化Picture级的RC信息，然后初始化所有LCU的RC信息（保存在一个一维数组里m_LCUs[]）。
       m_pcRateCtrl->initRCPic( frameLevel );
 	  //estimatedBits = m_pcRateCtrl->getRCPic()->getTargetBits();//包含头部比特
@@ -2041,8 +2041,8 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
         avgLambda = lambda;  //lambda为当前帧的lambda
       }
 
-	  TEncRCSeq* rcSeq = m_pcRateCtrl->getRCSeq();
 
+	  TEncRCSeq* rcSeq = m_pcRateCtrl->getRCSeq();
 	  //cout << "avgQP: " << avgQP << endl;
 	  if (pcSlice->getSliceType() != I_SLICE)
 	  {	
@@ -2051,16 +2051,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 		  rcSeq->m_num++; 
 		  cout << endl << "complex: " << rcSeq->m_last_complex << endl;
 	  }
-	  
-	  rcSeq->m_windowsBits -= actualTotalBits;
-	  rcSeq->m_leftFrames -= 1;
+//	  rcSeq->m_leftFrames -= 1;
 
 
       m_pcRateCtrl->getRCPic()->updateAfterPicture( actualHeadBits, actualTotalBits, avgQP, avgLambda, pcSlice->getSliceType());
-      m_pcRateCtrl->getRCPic()->addToPictureLsit( m_pcRateCtrl->getPicList() );
-
-
-	
+      m_pcRateCtrl->getRCPic()->addToPictureLsit( m_pcRateCtrl->getPicList() );	
 	  //更新序列的剩余比特数和剩余帧数
       m_pcRateCtrl->getRCSeq()->updateAfterPic( actualTotalBits );
 	  //更新GOP的剩余比特数和剩余帧数
@@ -2072,6 +2067,27 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       {
         m_pcRateCtrl->getRCGOP()->updateAfterPicture( estimatedBits );
       }
+
+
+
+
+	  
+	  rcSeq->m_windowsBits -= actualTotalBits;
+	  if (rcSeq->m_framesLeft > rcSeq->m_windowsL)
+	  {
+		  rcSeq->m_windowsBits += rcSeq->m_bitsLeft / rcSeq->m_framesLeft;
+	  }
+	  else if (rcSeq->m_framesLeft < rcSeq->m_windowsL)
+	  {
+		  rcSeq->m_windowsL--;
+		  if (rcSeq->m_windowsL < 0)
+		  {
+			  cout << "windowsL error" << endl;
+			  exit(0);
+		  }
+	  }
+
+
     }
 
     if( ( m_pcCfg->getPictureTimingSEIEnabled() || m_pcCfg->getDecodingUnitInfoSEIEnabled() ) &&

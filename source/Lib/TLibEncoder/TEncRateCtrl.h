@@ -152,7 +152,7 @@ public:
 
 
 public:
-	Int m_windowsBits;
+	Int64 m_windowsBits;
 	Int m_windowsL;
 	Int m_leftFrames;
 	
@@ -180,8 +180,8 @@ private:
   TRCParameter*  m_picPara;
   TRCParameter** m_LCUPara;  //这个变量第一维是图像在GOP中的level，第二维是LCU序号
 
-  Int m_framesLeft;
-  Int64 m_bitsLeft;
+
+  
   Double m_seqTargetBpp;
   Double m_alphaUpdate;
   Double m_betaUpdate;
@@ -189,6 +189,9 @@ private:
 
   Int m_adaptiveBit;
   Double m_lastLambda;  //每次framelevel为1时更新
+public:
+  Int m_framesLeft;//序列的剩余帧数
+ Int64 m_bitsLeft;//序列的剩余比特数
 };
 
 class TEncRCGOP
