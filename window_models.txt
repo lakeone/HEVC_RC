@@ -2,23 +2,32 @@ bppw为窗口内的均值
 X = R * QP 表示帧的复杂度
 Xratio = X / avgX
 
-
+0322
 	  rcSeq->m_windowsBits += rcSeq->m_bitsLeft / rcSeq->m_framesLeft;
 
-	  bppw = (Double)m_encRCSeq->m_windowsBits / (Double)m_encRCSeq->m_leftFrames / (Double)m_numberOfPixel;
+	  bppw = (Double)m_encRCSeq->m_windowsBits / (Double)m_encRCSeq->m_windowsL / (Double)m_numberOfPixel;
 	  
 	  if (m_encRCSeq->m_num >= 10)
 	  {
 		  Double ratio = m_encRCSeq->m_last_complex * m_encRCSeq->m_num / m_encRCSeq->m_complex;
-		  if (ratio < 0.8)
-			  bppw = bppw * 0.2;
+		  if (ratio < 0.7)
+			  bppw = bppw * 0.6;
 		  else if (ratio < 1.0)
-			  bppw = bppw * ratio * 0.6;
-		  else if (ratio < 1.4)
-			  bppw = bppw * ratio * 0.8;
+			  bppw = bppw * ratio * 0.9;
 		  else if (ratio < 2)
-			  bppw = bppw * 2;
+			  bppw = bppw * ratio * 1.1;
 		  else if (ratio >= 2)
-			  bppw = bppw * 3;
+			  bppw = bppw * 2.2;
 	  }
 	  bpp = bppw;
+
+
+0323
+		  if (ratio < 0.7)
+			  bppw = bppw * 0.6;
+		  else if (ratio < 1.0)
+			  bppw = bppw * ratio * 0.9;
+		  else if (ratio < 1.5)
+			  bppw = bppw * ratio * 1.1;
+		  else if (ratio >= 1.5)
+			  bppw = bppw * ratio * 1.3;
