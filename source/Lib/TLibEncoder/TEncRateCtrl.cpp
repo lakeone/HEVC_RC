@@ -663,23 +663,36 @@ Double TEncRCPic::estimatePicLambda( list<TEncRCPic*>& listPreviousPictures, Sli
 
   if (eSliceType == I_SLICE)
 	  bpp = (Double)m_targetBits / (Double)m_numberOfPixel;
+  //else if (m_frameLevel == 1)
+  //{
+	 // bppw = (Double)m_encRCSeq->m_windowsBits / (Double)m_encRCSeq->m_windowsL / (Double)m_numberOfPixel;
+	 // bpp = 1.4 * bppw;
+  //}
   else
   {
 	  bppw = (Double)m_encRCSeq->m_windowsBits / (Double)m_encRCSeq->m_windowsL / (Double)m_numberOfPixel;
 	  
-	  if (m_encRCSeq->m_num >= 10)
+	  if (m_encRCSeq->m_num >= 20)
 	  {
-		  Double ratio = m_encRCSeq->m_last_complex * m_encRCSeq->m_num / m_encRCSeq->m_complex;
-		  if (ratio < 0.7)
-			  bppw = bppw * 0.3;
-		  else if (ratio < 1.0)
-			  bppw = bppw * ratio * 0.6;
-		  else if (ratio < 1.4)
-			  bppw = bppw * ratio * 0.8;
+		  Double pred_complex = m_encRCSeq->least2x.getY(m_encRCSeq->m_last_complex);
+		  Double ratio = pred_complex * m_encRCSeq->m_num / m_encRCSeq->m_complex;
+		  //if (ratio < 0.7)
+			 // bppw = bppw * 0.6;
+		  //else if (ratio < 1.0)
+			 // bppw = bppw * ratio * 0.9;
+		  //else if (ratio < 1.5)
+			 // bppw = bppw * ratio * 1.1;
+		  //else if (ratio >= 1.5)
+			 // bppw = bppw * ratio * 1.3;
+		  if (ratio < 0.8)
+			  bppw = bppw * 0.8 * ratio;
+		  else if (ratio < 1.2)
+			  ;
 		  else if (ratio < 2)
-			  bppw = bppw * 2;
-		  else if (ratio >= 2)
-			  bppw = bppw * 3;
+			  bppw = bppw * ratio * 1.1;
+		  else
+			  bppw = bppw * ratio * 1.3;
+
 	  }
 	  bpp = bppw;
   }

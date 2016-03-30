@@ -38,6 +38,7 @@
 #include <list>
 #include <algorithm>
 #include <functional>
+#include <deque>
 
 #include "TEncTop.h"
 #include "TEncGOP.h"
@@ -48,6 +49,7 @@
 #include "NALwrite.h"
 #include <time.h>
 #include <math.h>
+
 
 using namespace std;
 
@@ -72,6 +74,7 @@ Int getLSB(Int poc, Int maxLSB)
     return (maxLSB - ((-poc) % maxLSB)) % maxLSB;
   }
 }
+
 
 TEncGOP::TEncGOP()
 {
@@ -2046,10 +2049,12 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 	  //cout << "avgQP: " << avgQP << endl;
 	  if (pcSlice->getSliceType() != I_SLICE)
 	  {	
+		  double tmp = rcSeq->m_last_complex;
 		  rcSeq->m_last_complex = qstep[int(avgQP)] * actualTotalBits;
+		  rcSeq->least2x.update(tmp, rcSeq->m_last_complex);
 		  rcSeq->m_complex += rcSeq->m_last_complex;  
 		  rcSeq->m_num++; 
-		  cout << endl << "complex: " << rcSeq->m_last_complex << endl;
+		  //cout << endl << "complex: " << rcSeq->m_last_complex << endl;
 	  }
 //	  rcSeq->m_leftFrames -= 1;
 
@@ -2073,9 +2078,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
 	  
 	  rcSeq->m_windowsBits -= actualTotalBits;
-	  if (rcSeq->m_framesLeft > rcSeq->m_windowsL)
+	  if (rcSeq->m_framesLeft >= rcSeq->m_windowsL)
 	  {
-		  rcSeq->m_windowsBits += rcSeq->m_bitsLeft / rcSeq->m_framesLeft;
+		  rcSeq->m_windowsBits += (rcSeq->m_bitsLeft - rcSeq->m_windowsBits) / (rcSeq->m_framesLeft - rcSeq->m_windowsL + 1);
 	  }
 	  else if (rcSeq->m_framesLeft < rcSeq->m_windowsL)
 	  {

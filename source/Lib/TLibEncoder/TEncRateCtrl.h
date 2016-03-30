@@ -48,6 +48,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <deque>
 
 using namespace std;
 
@@ -93,6 +94,58 @@ struct TRCParameter
   Double m_alpha;
   Double m_beta;
 };
+
+
+class LeastSquare{
+public:
+	double a, b;
+	deque<double> x;
+	deque<double> y;
+	int num;
+	LeastSquare()
+	{
+		a = 1.0;
+		b = 0;
+		num = 5;
+	}
+	void update(double xx, double yy)
+	{
+		assert(x.size() == y.size());
+		if (x.size() >= num)
+		{
+			x.pop_front();
+			y.pop_front();
+		}
+
+		x.push_back(xx);
+		y.push_back(yy);
+
+		double t1 = 0, t2 = 0, t3 = 0, t4 = 0;
+		for (int i = 0; i<x.size(); ++i)
+		{
+			t1 += x[i] * x[i];
+			t2 += x[i];
+			t3 += x[i] * y[i];
+			t4 += y[i];
+		}
+		a = (t3*x.size() - t2*t4) / (t1*x.size() - t2*t2);
+		b = (t1*t4 - t2*t3) / (t1*x.size() - t2*t2);
+		cout << endl << a << " " << b << endl;
+	}
+
+	double getY(const double x) const
+	{
+
+		return a*x + b;
+	}
+
+	void print() const
+	{
+		cout << "y = " << a << "x + " << b << "\n";
+	}
+
+};
+
 
 class TEncRCSeq
 {
@@ -155,6 +208,7 @@ public:
 	Int64 m_windowsBits;
 	Int m_windowsL;
 	Int m_leftFrames;
+	LeastSquare least2x;
 	
 	Double m_complex;
 	Int m_num;
@@ -186,6 +240,7 @@ private:
   Double m_alphaUpdate;
   Double m_betaUpdate;
   Bool m_useLCUSeparateModel;
+
 
   Int m_adaptiveBit;
   Double m_lastLambda;  //每次framelevel为1时更新
